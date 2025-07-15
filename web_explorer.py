@@ -34,9 +34,6 @@ class WebExplorer:
         
         # Session for maintaining cookies/headers
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        })
     
     def analyze_url(self, url: str) -> Optional[Page]:
         """
@@ -83,42 +80,6 @@ class WebExplorer:
             self.failed_urls.add(url)
             return None
     
-    def get_page_summary(self, url: str) -> Optional[Dict]:
-        """
-        Get a summary of a page's analysis.
-        
-        Args:
-            url: URL of the page
-            
-        Returns:
-            Dictionary with page summary or None if page not found
-        """
-        if url not in self.visited_pages:
-            return None
-        
-        page = self.visited_pages[url]
-        
-        # Group elements by type
-        elements_by_type = {}
-        for element in page.elements:
-            if element.element_type not in elements_by_type:
-                elements_by_type[element.element_type] = []
-            elements_by_type[element.element_type].append(element)
-        
-        # Get high priority elements
-        high_priority = page.get_high_priority_elements()
-        
-        return {
-            'url': url,
-            'title': page.title,
-            'total_elements': len(page.elements),
-            'elements_by_type': {k: len(v) for k, v in elements_by_type.items()},
-            'high_priority_elements': len(high_priority),
-            'links_found': len(page.links),
-            'is_processed': page.is_processed,
-            'load_time': page.load_time
-        }
-    
     def get_prioritized_elements(self, url: str, element_type: str = None) -> List[PageElement]:
         """
         Get prioritized elements from a page.
@@ -141,54 +102,3 @@ class WebExplorer:
         
         # Sort by priority score (highest first)
         return sorted(elements, key=lambda x: x.priority_score, reverse=True)
-    
-    def _process_page(self, page: Page):
-        """
-        Process a page: clean HTML, extract elements, and prioritize them.
-        
-        Args:
-            page: Page object to process
-        """
-        start_time = time.time()
-        
-        try:
-            # Clean HTML
-            cleaned_soup = self.html_parser.clean_html(page.raw_html, page.url)
-            page.soup = cleaned_soup
-            page.cleaned_html = str(cleaned_soup)
-            
-            # Extract elements
-            elements = self.html_parser.extract_elements(cleaned_soup)
-            
-            # Prioritize elements
-            for element in elements:
-                element.priority_score = self.element_prioritizer.calculate_priority(element)
-            
-            page.elements = elements
-            
-            # Extract links
-            page.links = self.html_parser.extract_links(cleaned_soup, page.url)
-            self.discovered_urls.update(page.links)
-            
-            # Mark as processed
-            page.is_processed = True
-            page.load_time = time.time() - start_time
-            
-        except Exception as e:
-            page.error_message = str(e)
-            page.load_time = time.time() - start_time
-    
-    def get_stats(self) -> Dict:
-        """
-        Get exploration statistics.
-        
-        Returns:
-            Dictionary with exploration stats
-        """
-        return {
-            'pages_analyzed': len(self.visited_pages),
-            'failed_urls': len(self.failed_urls),
-            'discovered_urls': len(self.discovered_urls),
-            'total_elements': sum(len(page.elements) for page in self.visited_pages.values()),
-            'processed_pages': sum(1 for page in self.visited_pages.values() if page.is_processed)
-        } 
