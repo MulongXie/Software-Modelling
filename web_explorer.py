@@ -15,7 +15,6 @@ class WebExplorer:
     def __init__(self, max_pages: int = 100, delay: float = 1.0):
         """
         Initialize the WebExplorer.
-        
         Args:
             max_pages: Maximum number of pages to analyze
             delay: Delay between requests (in seconds)
@@ -38,10 +37,8 @@ class WebExplorer:
     def analyze_url(self, url: str) -> Optional[Page]:
         """
         Analyze a single URL and return a Page object.
-        
         Args:
             url: URL to analyze
-            
         Returns:
             Page object if successful, None if failed
         """
@@ -83,11 +80,9 @@ class WebExplorer:
     def get_prioritized_elements(self, url: str, element_type: str = None) -> List[PageElement]:
         """
         Get prioritized elements from a page.
-        
         Args:
             url: URL of the page
             element_type: Optional filter by element type
-            
         Returns:
             List of PageElement objects sorted by priority
         """
