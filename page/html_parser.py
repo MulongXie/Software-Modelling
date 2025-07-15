@@ -19,12 +19,10 @@ class HTMLParser:
     def clean_html(self, html_content: str, url: str, preserve_structure: bool = True) -> BeautifulSoup:
         """
         Clean HTML content by removing unnecessary elements and attributes.
-        
         Args:
             html_content: Raw HTML content to clean
             url: URL of the page (for context)
             preserve_structure: Whether to preserve basic HTML structure
-            
         Returns:
             BeautifulSoup object with cleaned HTML
         """
@@ -47,10 +45,8 @@ class HTMLParser:
     def extract_elements(self, soup: BeautifulSoup) -> List[PageElement]:
         """
         Extract all relevant elements from the cleaned HTML.
-        
         Args:
             soup: BeautifulSoup object with cleaned HTML
-            
         Returns:
             List of PageElement objects
         """
@@ -70,11 +66,9 @@ class HTMLParser:
     def extract_links(self, soup: BeautifulSoup, base_url: str = "") -> Set[str]:
         """
         Extract all links from the HTML.
-        
         Args:
             soup: BeautifulSoup object
             base_url: Base URL for resolving relative links
-            
         Returns:
             Set of absolute URLs
         """
@@ -92,7 +86,13 @@ class HTMLParser:
         return links
     
     def _clean_head(self, soup: BeautifulSoup):
-        """Clean head section, keeping only title"""
+        """
+        Cleans and simplifies HTML content by removing unnecessary elements and attributes.
+        Args:
+            soup (BeautifulSoup): The HTML soup object to clean
+        Returns:
+            None (modifies soup object in place)
+        """
         head = soup.find('head')
         if head:
             for tag in head.find_all():
@@ -100,22 +100,28 @@ class HTMLParser:
                     tag.decompose()
     
     def _clean_elements(self, soup: BeautifulSoup):
-        """Remove unnecessary elements and attributes"""
-        # Remove script, style, and other unwanted tags
+        """
+        Cleans and simplifies HTML content by removing unnecessary elements and attributes.
+        Args:
+            soup (BeautifulSoup): The HTML soup object to clean
+        Returns:
+            None (modifies soup object in place)
+        """
+        # Remove script, style, and source tags
         for tag in soup.find_all(['script', 'style', 'source', 'path']):
             tag.decompose()
-        
-        # Remove tooltips
+
+        # Remove elements with role="tooltip"
         for tag in soup.find_all(attrs={'role': 'tooltip'}):
             tag.decompose()
-        
-        # Clean attributes
+
         for tag in soup.find_all():
+            # Special handling for <img> tags - remove src attribute
             if tag.name == 'img' or tag.name == 'svg':
                 # Remove src from images to avoid loading issues
                 attrs = dict(tag.attrs)
                 for attr in attrs:
-                    if attr not in self.allowed_attrs or attr == 'src':
+                    if attr not in self.allowed_attrs or (attr == 'src' and len(tag['src']) > 200):
                         del tag[attr]
             else:
                 attrs = dict(tag.attrs)
@@ -128,7 +134,13 @@ class HTMLParser:
             comment.extract()
     
     def _remove_empty_elements(self, soup: BeautifulSoup):
-        """Remove empty elements recursively"""
+        """
+        Removes empty elements from HTML.
+        Args:
+            soup (BeautifulSoup): The HTML soup object to clean
+        Returns:
+            None (modifies soup object in place)
+        """
         while True:
             removed = False
             for element in soup.find_all():
@@ -149,7 +161,14 @@ class HTMLParser:
                 break
     
     def _add_title_info(self, soup: BeautifulSoup, url: str):
-        """Add title information to the cleaned HTML"""
+        """
+        Adds title information to the cleaned HTML.
+        Args:
+            soup (BeautifulSoup): The HTML soup object to clean
+            url (str): The URL of the page
+        Returns:
+            None (modifies soup object in place)
+        """
         body = soup.find('body')
         if body:
             title_text = soup.find('title').string if soup.find('title') else "No title"
@@ -163,7 +182,13 @@ class HTMLParser:
             body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
     
     def _create_page_element(self, tag) -> Optional[PageElement]:
-        """Create a PageElement from a BeautifulSoup tag"""
+        """
+        Creates a PageElement from a BeautifulSoup tag.
+        Args:
+            tag (BeautifulSoup): The tag to create a PageElement from
+        Returns:
+            Optional[PageElement]: The PageElement object or None if the tag is not valid
+        """
         if not tag.name:
             return None
         
