@@ -1,173 +1,226 @@
 # WebExplorer - Advanced Web Software Analysis
 
-A sophisticated web crawler and analyzer that addresses key limitations of traditional web crawlers by implementing **intelligent element prioritization** and preparing for **dynamic content handling**.
+A sophisticated web exploration system that addresses key limitations of traditional web crawlers by implementing **intelligent element prioritization** and **dynamic content handling** with Playwright.
 
 ## 🎯 Key Features
 
-### 1. **Smart Element Prioritization**
+### 1. **Smart Element Prioritization** ✅
 - **Navigation elements** (nav buttons, menus) get highest priority
 - **Action elements** (buttons, forms) get medium-high priority  
 - **Content elements** get lower priority
 - **Semantic analysis** based on HTML structure, CSS classes, and text content
+- **Global element tracking** across all pages
 
-### 2. **Comprehensive Page Analysis**
+### 2. **Dynamic Content Handling** ✅  
+- **Playwright integration** for modern SPAs and dynamic sites
+- **Smart waiting** for network idle and content loading
+- **JavaScript execution** support for React/Vue/Angular apps
+- **Login support** with customizable selectors
+
+### 3. **Comprehensive Analysis**
 - Clean HTML parsing with noise reduction
-- Element classification (navigation, buttons, links, content, etc.)
-- Link discovery and extraction
-- Page caching and state management
+- Element classification and prioritization
+- Link discovery and exploration
+- Performance metrics and load time tracking
+- Screenshot capture for visual analysis
 
-### 3. **Extensible Architecture**
-- Modular design for easy extension
-- Clear separation of concerns
-- Ready for dynamic content handling integration
+### 4. **Extensible Architecture**
+- **WebExplorer**: Main orchestrator managing global state
+- **WebCrawler**: Playwright-based browser automation
+- **HTMLParser**: Content processing and element extraction
+- **ElementPrioritizer**: Semantic importance scoring
 
 ## 🚀 Quick Start
 
 ### Installation
 ```bash
 pip install -r requirements.txt
+playwright install  # Install browser binaries
 ```
 
 ### Basic Usage
 ```python
-from src import WebExplorer
+from web_explorer import WebExplorer
 
 # Create explorer instance
-explorer = WebExplorer(max_pages=5, delay=1.0)
+explorer = WebExplorer(
+    company_name="my_company",
+    start_urls=["https://example.com"],
+    allowed_domains=["https://example.com"],
+    max_state_no=5,
+    headless=True
+)
 
-# Analyze a website
-page = explorer.analyze_url("https://example.com")
+# Start exploration
+results = explorer.start_exploration()
 
-# Get prioritized elements
-prioritized_elements = explorer.get_prioritized_elements(page.url)
-
-# Show top navigation elements
-nav_elements = explorer.get_prioritized_elements(page.url, "navigation")
+# Access global elements
+nav_elements = explorer.get_global_navigation_elements()
+action_elements = explorer.get_global_action_elements()
 ```
 
-### Run the Example
+### With Authentication
+```python
+explorer = WebExplorer(
+    company_name="secure_site",
+    start_urls=["https://app.example.com/login"],
+    allowed_domains=["https://app.example.com"],
+    login_credentials={
+        'username': 'your_username',
+        'password': 'your_password'
+    },
+    headless=False  # Show browser for debugging
+)
+
+results = explorer.start_exploration()
+```
+
+### Run Examples
 ```bash
-# Test with default URL
-python example_usage.py
+# Run integrated system demo
+python example_integrated.py
 
-# Test with custom URL
-python example_usage.py https://quotes.toscrape.com/
-
-# Run basic tests
-python test_basic.py
+# Install Playwright browsers first
+playwright install
 ```
 
-## 📁 Project Structure
+## 📁 New Project Structure
 
 ```
-├── src/
-│   ├── __init__.py           # Package initialization
-│   ├── page.py               # Page and PageElement classes
-│   ├── html_parser.py        # HTML cleaning and parsing
-│   ├── element_prioritizer.py # Element prioritization logic
-│   └── web_explorer.py       # Main orchestrator class
-├── ref/                      # Reference implementations
-├── test_basic.py            # Basic functionality tests
-├── example_usage.py         # Usage examples
-├── requirements.txt         # Dependencies
+├── web_explorer.py          # Main orchestrator class
+├── crawler/
+│   └── crawler.py           # Playwright-based web crawler
+├── parser/
+│   ├── page.py              # Page and PageElement classes
+│   ├── html_parser.py       # HTML cleaning and parsing
+│   └── element_prioritizer.py # Element prioritization logic
+├── ref/                     # Reference implementations
+├── example_integrated.py    # Integrated system examples
+├── requirements.txt         # Dependencies (includes Playwright)
 └── README.md               # This file
 ```
 
-## 🧩 Core Components
+## 🧩 Architecture Overview
 
-### 1. **WebExplorer** (Main Orchestrator)
-- Manages the entire analysis process
-- Handles HTTP requests and session management
-- Coordinates all other components
+```
+WebExplorer (Orchestrator)
+├── WebCrawler (Playwright-based)
+│   ├── Browser automation
+│   ├── Dynamic content handling
+│   ├── Login support
+│   └── Link extraction
+├── HTMLParser (Content Processing)
+│   ├── HTML cleaning
+│   ├── Element extraction
+│   └── Link discovery
+├── ElementPrioritizer (Intelligence)
+│   ├── Semantic scoring
+│   ├── Type classification
+│   └── Priority ranking
+└── Page Objects (Storage)
+    ├── Individual page data
+    ├── Element collections
+    └── Metadata
+```
 
-### 2. **Page** (Content Storage)
-- Stores page content and metadata
-- Caches extracted elements and links
-- Provides filtering and querying methods
+## 🎯 Problem-Solution Mapping
 
-### 3. **HTMLParser** (Content Processing)
-- Cleans HTML by removing noise (scripts, styles, etc.)
-- Extracts and classifies elements
-- Discovers links and relationships
+### ✅ Problem 1: Element Prioritization 
+**Traditional Issue**: All elements treated equally
+**Our Solution**: 
+- Semantic scoring based on multiple factors
+- Global element tracking across pages  
+- Explainable prioritization with detailed scoring
 
-### 4. **ElementPrioritizer** (Intelligence Layer)
-- Calculates semantic importance scores
-- Considers element type, position, attributes, and text content
-- Provides explainable prioritization
-
-## 🎯 Element Prioritization Logic
-
-The prioritizer uses multiple factors to score elements:
-
-### Base Scores by Type
-- **Navigation**: 0.9 (highest priority)
-- **Buttons**: 0.8
-- **Forms**: 0.75
-- **Links**: 0.7
-- **Headers**: 0.6
-- **Content**: 0.4
-- **Media**: 0.5
-
-### Boost Factors
-- **Important keywords**: login, signup, menu, settings, etc.
-- **CSS classes**: navbar, btn-primary, main-nav, etc.
-- **HTML attributes**: role="navigation", aria-label, etc.
-- **Element position**: header tags, main content areas
-- **Text characteristics**: length, formatting, action words
+### ✅ Problem 2: Dynamic Content Handling
+**Traditional Issue**: URL-based crawling misses dynamic content
+**Our Solution**:
+- Playwright integration for JavaScript execution
+- Smart waiting for network idle and content loading
+- State change detection without URL changes
 
 ## 🔧 Example Output
 
 ```
-🔍 Analyzing website: https://example.com
-============================================================
+🚀 Starting exploration for my_company
+📁 Output directory: Output/dynamic_crawling/my_company
 
-📄 Page Information:
-   Title: Example Domain
-   URL: https://example.com
-   Domain: example.com
-   Elements found: 23
-   Links found: 1
+🔍 Exploring URL 1/5: https://example.com
+✅ Successfully analyzed https://example.com
+   📊 Elements found: 45
+   🔗 Links discovered: 12
+   ⏱️ Load time: 1.23s
 
-⭐ Top 10 Priority Elements:
-   1. h1 (header) - Score: 0.780
-      Text: 'Example Domain'
-      
-   2. a (link) - Score: 0.850
-      Text: 'More information...'
-      Classes: 'info-link'
-      
-   3. p (content) - Score: 0.400
-      Text: 'This domain is for use in illustrative examples...'
+📈 Analyzing global patterns across 3 pages...
+   🧭 Global navigation elements: 8
+   ⚙️ Global settings elements: 3
+   🎯 Global action elements: 15
+
+📋 Exploration Complete!
+   📄 Pages explored: 3
+   🎯 Total elements: 127
+   🧭 Navigation elements: 8
+   ⚙️ Settings elements: 3
+   🎯 Action elements: 15
 ```
 
-## 🛠️ Next Steps
+## 📊 Key Advantages Over Traditional Crawlers
 
-This foundation is ready for extension with:
+| Feature | Traditional Crawlers | WebExplorer |
+|---------|---------------------|-------------|
+| **Element Priority** | ❌ All equal | ✅ Semantic scoring |
+| **Dynamic Content** | ❌ URLs only | ✅ JavaScript execution |
+| **Modern SPAs** | ❌ Limited support | ✅ Full support |
+| **Global Analysis** | ❌ Page-by-page | ✅ Cross-page patterns |
+| **Login Support** | ❌ Manual setup | ✅ Built-in automation |
+| **Performance** | ❌ Slow (Selenium) | ✅ Fast (Playwright) |
 
-1. **Dynamic Content Handling**: Integration with Selenium/Playwright for SPAs
-2. **Priority Queue Implementation**: For intelligent crawling order
-3. **Knowledge Graph Integration**: For Q&A and automation applications
-4. **Advanced ML Models**: For even better element classification
+## 🛠️ Advanced Usage
 
-## 📊 Technical Approach
+### Custom Element Prioritization
+```python
+# Access detailed priority explanations
+prioritizer = ElementPrioritizer()
+explanation = prioritizer.get_priority_explanation(element)
+print(f"Score: {explanation['total_score']}")
+print(f"Reasoning: {explanation['reasoning']}")
+```
 
-### Problem 1: Element Prioritization ✅
-- **Solution**: Semantic scoring based on multiple factors
-- **Status**: Implemented and working
-- **Benefits**: Focuses on important elements first
+### Global Element Analysis
+```python
+# Get elements that appear across multiple pages
+nav_elements = explorer.get_global_navigation_elements()
+for elem in nav_elements:
+    print(f"Navigation: {elem.text} (Score: {elem.priority_score})")
+```
 
-### Problem 2: Dynamic Content (Future)
-- **Solution**: Browser automation integration
-- **Status**: Architecture ready for integration
-- **Benefits**: Handle modern SPAs and dynamic updates
+### Custom Crawling Logic
+```python
+# Access the underlying crawler for custom operations
+crawler = explorer.crawler
+result = crawler.navigate_to_url("https://custom-page.com")
+links = crawler.extract_links()
+crawler.take_screenshot("custom_screenshot.png")
+```
+
+## 🚀 Next Steps & Roadmap
+
+This foundation enables powerful extensions:
+
+1. **Priority Queue Crawling**: Use prioritization for intelligent crawling order
+2. **Knowledge Graph Integration**: Export structured data for Q&A systems
+3. **ML-Enhanced Classification**: Train models on discovered patterns  
+4. **Real-time Monitoring**: Detect site changes and updates
+5. **PortalX Integration**: Power advanced interface analysis
 
 ## 🤝 Contributing
 
-The modular architecture makes it easy to extend:
+The modular architecture makes extension straightforward:
 
-1. **Add new element types** in `HTMLParser._classify_element()`
-2. **Improve prioritization** in `ElementPrioritizer.calculate_priority()`
-3. **Add dynamic handling** by extending `WebExplorer`
+1. **Enhance Prioritization**: Modify `ElementPrioritizer.calculate_priority()`
+2. **Add Crawler Features**: Extend `WebCrawler` class methods
+3. **Custom Analysis**: Create new analysis methods in `WebExplorer`
+4. **New Element Types**: Update `HTMLParser._classify_element()`
 
 ## 📄 License
 
