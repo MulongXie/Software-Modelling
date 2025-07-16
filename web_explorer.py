@@ -1,7 +1,7 @@
 import requests
 from typing import Dict, List, Optional, Set
 from parser.page import Page, PageElement
-from parser.html_parser import HTMLParser
+from parser.parser import HTMLParser
 from crawler.crawler import WebCrawler
 import time
 import os
