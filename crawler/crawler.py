@@ -90,58 +90,6 @@ class WebCrawler:
     *** Crawling ***
     ****************
     '''
-    def navigate_to_url(self, url: str) -> Dict:
-        """
-        Navigate to a URL and return page content.
-        
-        Args:
-            url: URL to navigate to
-            
-        Returns:
-            Dict with page content and metadata
-        """
-        if not self.page:
-            self.start_browser()
-        
-        try:
-            print(f"Navigating to: {url}")
-            
-            # Navigate to the URL
-            response = self.page.goto(url, wait_until='networkidle')
-            
-            # Wait for page to be ready
-            self.page.wait_for_load_state('networkidle')
-            
-            # Get page content
-            html_content = self.page.content()
-            title = self.page.title()
-            current_url = self.page.url
-            
-            # Get page metrics
-            load_time = self._measure_load_time()
-            
-            return {
-                'url': current_url,
-                'html_content': html_content,
-                'title': title,
-                'load_time': load_time,
-                'status_code': response.status if response else None,
-                'success': True,
-                'error': None
-            }
-            
-        except Exception as e:
-            print(f"Failed to navigate to {url}: {e}")
-            return {
-                'url': url,
-                'html_content': None,
-                'title': None,
-                'load_time': None,
-                'status_code': None,
-                'success': False,
-                'error': str(e)
-            }
-    
     def login(self, login_credentials: Dict[str, str], login_selectors: Dict[str, str] = None) -> bool:
         """
         Perform login using provided credentials.
@@ -195,6 +143,58 @@ class WebCrawler:
         except Exception as e:
             print(f"Login failed: {e}")
             return False
+        
+    def navigate_to_url(self, url: str) -> Dict:
+        """
+        Navigate to a URL and return page content.
+        
+        Args:
+            url: URL to navigate to
+            
+        Returns:
+            Dict with page content and metadata
+        """
+        if not self.page:
+            self.start_browser()
+        
+        try:
+            print(f"Navigating to: {url}")
+            
+            # Navigate to the URL
+            response = self.page.goto(url, wait_until='networkidle')
+            
+            # Wait for page to be ready
+            self.page.wait_for_load_state('networkidle')
+            
+            # Get page content
+            html_content = self.page.content()
+            title = self.page.title()
+            current_url = self.page.url
+            
+            # Get page metrics
+            load_time = self._measure_load_time()
+            
+            return {
+                'url': current_url,
+                'html_content': html_content,
+                'title': title,
+                'load_time': load_time,
+                'status_code': response.status if response else None,
+                'success': True,
+                'error': None
+            }
+            
+        except Exception as e:
+            print(f"Failed to navigate to {url}: {e}")
+            return {
+                'url': url,
+                'html_content': None,
+                'title': None,
+                'load_time': None,
+                'status_code': None,
+                'success': False,
+                'error': str(e)
+            }
     
     def _measure_load_time(self) -> float:
         """
