@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Set
-from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import hashlib
 
@@ -19,7 +18,7 @@ class PageElement:
 class Page:
     """
     Represents a web page with its content and extracted elements.
-    Serves as a cache and storage mechanism for page analysis.
+    Minimal version for basic page storage.
     """
     
     def __init__(self, url: str, raw_html: str = "", title: str = ""):
@@ -31,7 +30,6 @@ class Page:
         
         # Page content analysis
         self.cleaned_html: Optional[str] = None
-        self.soup: Optional[BeautifulSoup] = None
         self.elements: List[PageElement] = []
         self.links: Set[str] = set()
         
