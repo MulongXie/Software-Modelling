@@ -1,13 +1,11 @@
 from bs4 import BeautifulSoup, Comment
-import re
-from typing import List, Set, Optional
-from .page import PageElement
+from typing import Optional
 
 
 class HTMLParser:
     """
-    HTML parser for cleaning and extracting elements from web pages.
-    Adapted from reference implementation for static page analysis.
+    Minimal HTML parser for cleaning web page content.
+    Simplified version focusing on basic HTML cleaning.
     """
     
     def __init__(self):
@@ -16,13 +14,14 @@ class HTMLParser:
         # Attributes to preserve during cleaning
         self.allowed_attrs = ['href', 'src', 'type', 'id', 'class', 'role', 'name', 'title', 'aria-expanded', 'aria-label', 'data-icon']
         
-    def clean_html(self, html_content: str, url: str, preserve_structure: bool = True) -> BeautifulSoup:
+    def clean_html(self, html_content: str, url: str) -> BeautifulSoup:
         """
         Clean HTML content by removing unnecessary elements and attributes.
+        
         Args:
             html_content: Raw HTML content to clean
             url: URL of the page (for context)
-            preserve_structure: Whether to preserve basic HTML structure
+            
         Returns:
             BeautifulSoup object with cleaned HTML
         """
@@ -42,57 +41,8 @@ class HTMLParser:
         
         return soup
     
-    def extract_elements(self, soup: BeautifulSoup) -> List[PageElement]:
-        """
-        Extract all relevant elements from the cleaned HTML.
-        Args:
-            soup: BeautifulSoup object with cleaned HTML
-        Returns:
-            List of PageElement objects
-        """
-        elements = []
-        
-        # Find all relevant elements
-        for tag in soup.find_all(True):  # Find all tags
-            if tag.name in ['script', 'style', 'head', 'meta']:
-                continue
-                
-            element = self._create_page_element(tag)
-            if element:
-                elements.append(element)
-        
-        return elements
-    
-    def extract_links(self, soup: BeautifulSoup, base_url: str = "") -> Set[str]:
-        """
-        Extract all links from the HTML.
-        Args:
-            soup: BeautifulSoup object
-            base_url: Base URL for resolving relative links
-        Returns:
-            Set of absolute URLs
-        """
-        links = set()
-        
-        for a_tag in soup.find_all('a', href=True):
-            href = a_tag['href']
-            if href and not href.startswith('#'):
-                # Convert relative to absolute URL if needed
-                if href.startswith('/') and base_url:
-                    from urllib.parse import urljoin
-                    href = urljoin(base_url, href)
-                links.add(href)
-        
-        return links
-    
     def _clean_head(self, soup: BeautifulSoup):
-        """
-        Cleans and simplifies HTML content by removing unnecessary elements and attributes.
-        Args:
-            soup (BeautifulSoup): The HTML soup object to clean
-        Returns:
-            None (modifies soup object in place)
-        """
+        """Clean head section, keeping only title"""
         head = soup.find('head')
         if head:
             for tag in head.find_all():
@@ -110,11 +60,12 @@ class HTMLParser:
         # Remove script, style, and source tags
         for tag in soup.find_all(['script', 'style', 'source', 'path']):
             tag.decompose()
-
-        # Remove elements with role="tooltip"
+        
+        # Remove tooltips
         for tag in soup.find_all(attrs={'role': 'tooltip'}):
             tag.decompose()
-
+        
+        # Clean attributes
         for tag in soup.find_all():
             # Special handling for <img> tags - remove src attribute
             if tag.name == 'img' or tag.name == 'svg':
@@ -180,64 +131,3 @@ class HTMLParser:
             </div>
             '''
             body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
-    
-    def _create_page_element(self, tag) -> Optional[PageElement]:
-        """
-        Creates a PageElement from a BeautifulSoup tag.
-        Args:
-            tag (BeautifulSoup): The tag to create a PageElement from
-        Returns:
-            Optional[PageElement]: The PageElement object or None if the tag is not valid
-        """
-        if not tag.name:
-            return None
-        
-        # Get text content
-        text = tag.get_text(strip=True)
-        
-        # Get attributes
-        attributes = dict(tag.attrs) if tag.attrs else {}
-        
-        # Determine element type
-        element_type = self._classify_element(tag)
-        
-        return PageElement(
-            tag=tag.name,
-            text=text,
-            attributes=attributes,
-            element_type=element_type
-        )
-    
-    def _classify_element(self, tag) -> str:
-        """Classify element type based on tag and attributes"""
-        tag_name = tag.name.lower()
-        
-        # Navigation elements
-        if tag_name == 'nav' or 'nav' in tag.get('class', []):
-            return 'navigation'
-        
-        # Button elements
-        if tag_name in ['button', 'input'] and tag.get('type') == 'submit':
-            return 'button'
-        
-        # Link elements
-        if tag_name == 'a' and tag.get('href'):
-            return 'link'
-        
-        # Form elements
-        if tag_name in ['form', 'input', 'textarea', 'select']:
-            return 'form'
-        
-        # Header elements
-        if tag_name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
-            return 'header'
-        
-        # Content elements
-        if tag_name in ['p', 'div', 'span', 'article', 'section']:
-            return 'content'
-        
-        # Media elements
-        if tag_name in ['img', 'video', 'audio']:
-            return 'media'
-        
-        return 'unknown' 
