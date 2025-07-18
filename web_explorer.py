@@ -14,8 +14,7 @@ class WebExplorer:
     """
     
     def __init__(self, company_name, start_urls, allowed_domains, exclude_domains=None, 
-                 login_credentials=None, max_state_no=100, output_base_dir="data/crawling", 
-                 headless=True):
+                 login_credentials=None, max_state_no=100, output_base_dir="data/crawling"):
         """
         Initialize the WebExplorer.
         Args:
@@ -26,8 +25,6 @@ class WebExplorer:
             login_credentials (dict): Dictionary containing login credentials
             max_state_no (int): Maximum number of states/pages to analyze
             output_base_dir (str): Base directory for storing crawled data
-            headless (bool): Whether to run browser in headless mode
-            delay (float): Delay between requests in seconds
         """
         # Configuration
         self.company_name = company_name
@@ -40,7 +37,7 @@ class WebExplorer:
         
         # Components
         self.html_parser = HTMLParser()
-        self.crawler = WebCrawler(headless=headless, timeout=30)
+        self.crawler = WebCrawler()
         
         # State management
         self.state_no = 0
