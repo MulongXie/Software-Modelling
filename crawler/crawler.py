@@ -166,19 +166,11 @@ class WebCrawler:
             # Wait for page to be ready
             self.page.wait_for_load_state('networkidle')
             
-            # Get page content
-            html_content = self.page.content()
-            title = self.page.title()
-            current_url = self.page.url
-            
-            # Get page metrics
-            load_time = self._measure_load_time()
-            
             return {
-                'url': current_url,
-                'html_content': html_content,
-                'title': title,
-                'load_time': load_time,
+                'url': self.page.url,
+                'html_content': self.page.content(),
+                'title': self.page.title(),
+                'load_time': self._measure_load_time(),
                 'status_code': response.status if response else None,
                 'success': True,
                 'error': None
@@ -280,20 +272,3 @@ class WebCrawler:
         
         return False
     
-    def get_current_url(self) -> Optional[str]:
-        """
-        Get current page URL.
-        
-        Returns:
-            Current page URL or None if no page is loaded
-        """
-        return self.page.url if self.page else None
-    
-    def get_page_title(self) -> Optional[str]:
-        """
-        Get current page title.
-        
-        Returns:
-            Current page title or None if no page is loaded
-        """
-        return self.page.title() if self.page else None
