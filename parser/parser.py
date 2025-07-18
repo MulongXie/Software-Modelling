@@ -14,14 +14,14 @@ class HTMLParser:
         # Attributes to preserve during cleaning
         self.allowed_attrs = ['href', 'src', 'type', 'id', 'class', 'role', 'name', 'title', 'aria-expanded', 'aria-label', 'data-icon']
         
-    def clean_html(self, html_content: str, url: str) -> BeautifulSoup:
+    def clean_html(self, html_content: str, url: str, save_path: str = None) -> BeautifulSoup:
         """
         Clean HTML content by removing unnecessary elements and attributes.
         
         Args:
             html_content: Raw HTML content to clean
             url: URL of the page (for context)
-            
+            save_path: Path to save the cleaned HTML
         Returns:
             BeautifulSoup object with cleaned HTML
         """
@@ -38,6 +38,10 @@ class HTMLParser:
         
         # Add title information
         self._add_title_info(soup, url)
+        
+        if save_path:
+            with open(save_path, 'w', encoding='utf-8') as f:
+                f.write(str(soup))
         
         return soup
     

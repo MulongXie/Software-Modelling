@@ -14,7 +14,7 @@ class WebExplorer:
     """
     
     def __init__(self, company_name, start_urls, allowed_domains, exclude_domains=None, 
-                 login_credentials=None, max_state_no=100, output_dir="Output/dynamic_crawling", 
+                 login_credentials=None, max_state_no=100, output_base_dir="data/crawling", 
                  headless=True):
         """
         Initialize the WebExplorer.
@@ -25,7 +25,7 @@ class WebExplorer:
             exclude_domains (list): List of excluded domains to crawl
             login_credentials (dict): Dictionary containing login credentials
             max_state_no (int): Maximum number of states/pages to analyze
-            output_dir (str): Base directory for storing crawled data
+            output_base_dir (str): Base directory for storing crawled data
             headless (bool): Whether to run browser in headless mode
             delay (float): Delay between requests in seconds
         """
@@ -36,7 +36,7 @@ class WebExplorer:
         self.exclude_domains = exclude_domains or []
         self.login_credentials = login_credentials
         self.max_state_no = max_state_no
-        self.output_dir = os.path.join(output_dir, self.company_name)
+        self.output_dir = os.path.join(output_base_dir, self.company_name)
         
         # Components
         self.html_parser = HTMLParser()
@@ -51,7 +51,6 @@ class WebExplorer:
         # Global elements (nav, settings, etc.) - aggregated across all pages
         self.global_navigation_elements: List[PageElement] = []
         self.global_settings_elements: List[PageElement] = []
-        self.global_action_elements: List[PageElement] = []
         
         # Analysis statistics
         self.total_load_time = 0.0
@@ -81,20 +80,33 @@ class WebExplorer:
             
             # Process starting URLs
             for url in self.start_urls:
-                if self.state_no >= self.max_state_no:
+                # Check if it is valid to proceed
+                if self.state_no >= self.max_state_no or not self.crawler.is_url_allowed(url, self.allowed_domains, self.exclude_domains):
                     break
-                self._explore_url(url)
+                    
+                # Navigate to URL
+                print(f"*** Exploring URL {self.state_no + 1}/{self.max_state_no}: {url} ***")
+                page_result = self.crawler.navigate_to_url(url)
+                
+                # Process page
+                if page_result['success']:
+                    file_name = f"{page_result['title']}_{self.state_no}.html"
+                    # Take screenshot
+                    self.crawler.take_screenshot(f"{self.output_dir}/{file_name}.png")
+                    # Clean HTML
+                    self.html_parser.clean_html(page_result['html_content'], url, f"{self.output_dir}/{file_name}")
+                    print(f"Successfully processed {url}")
+                else:
+                    print(f"Failed to load {url}: {page_result['error']}")
+                
+                self.state_no += 1
             
-            # Process discovered URLs
-            self._process_discovered_urls()
-            
-            # Analyze global patterns
-            self._analyze_global_patterns()
-            
-            # Generate final report
-            results = self._generate_exploration_report()
-            
-            return results
+            # Return basic results
+            return {
+                'company_name': self.company_name,
+                'pages_processed': self.state_no,
+                'output_dir': self.output_dir
+            }
             
         finally:
             # Clean up
